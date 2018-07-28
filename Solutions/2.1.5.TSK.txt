@@ -1,0 +1,19 @@
+﻿Задание 2.1.5.TSK.A: показать первую и последнюю даты выдачи книги читателю.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT min(sb_start) min_date, max(sb_start) max_date
+FROM subscriptions
+___________________________________________________
+
+MS SQL	Решение:
+SELECT min(sb_start) min_date, max(sb_start) max_date
+FROM subscriptions
+___________________________________________________
+
+Oracle	Решение:
+SELECT min("sb_start") "min_date", max("sb_start") "max_date"
+FROM "subscriptions"
+
+-------------------------------------------------------------------------------------------------------------------------------------
+

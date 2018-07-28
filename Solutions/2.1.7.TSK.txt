@@ -1,0 +1,56 @@
+﻿Задание 2.1.7.TSK.A: показать книги, количество экземпляров которых меньше среднего по библиотеке.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT b_name
+FROM books
+where b_quantity < 
+(SELECT avg(b_quantity)
+FROM books)
+___________________________________________________
+
+MS SQL	Решение:
+SELECT b_name
+FROM books
+where b_quantity < 
+(SELECT avg(b_quantity)
+FROM books)
+___________________________________________________
+
+Oracle	Решение:
+SELECT "b_name"
+FROM "books"
+where "b_quantity" < 
+(SELECT avg("b_quantity")
+FROM "books")
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.1.7.TSK.B: показать идентификаторы и даты выдачи книг за первый год работы библиотеки (первым годом работы библиотеки счи-тать все даты с первой выдачи книги по 31-е декабря (включительно) того года, когда библиотека начала работать).
+___________________________________________________
+
+MySQL	Решение: 
+SELECT sb_book, sb_start
+FROM subscriptions
+where year(sb_start) = 
+(SELECT min(year(sb_start))
+FROM subscriptions)
+___________________________________________________
+
+MS SQL	Решение:
+SELECT sb_book, sb_start
+FROM subscriptions
+where year(sb_start) = 
+(SELECT min(year(sb_start))
+FROM subscriptions)
+___________________________________________________
+
+Oracle	Решение:
+SELECT "sb_book", "sb_start"
+FROM "subscriptions"
+where EXTRACT(year from "sb_start") = 
+(SELECT min(EXTRACT(year from "sb_start"))
+FROM "subscriptions")
+
+-------------------------------------------------------------------------------------------------------------------------------------
+

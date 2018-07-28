@@ -1,0 +1,38 @@
+﻿Задание 2.1.4.TSK.A: показать, сколько всего раз читателям выдавались книги.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT count(sb_id) count_num
+
+FROM subscriptions
+___________________________________________________
+
+MS SQL	Решение:
+SELECT count(sb_id) count_num
+
+FROM subscriptions
+___________________________________________________
+
+Oracle	Решение:
+SELECT count("sb_id") "count_num"
+FROM "subscriptions"
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.1.4.TSK.B: показать, сколько читателей брало книги в библио-теке.
+
+___________________________________________________
+
+MySQL	Решение: 
+SELECT count(distinct(sb_subscriber)) count_sub
+FROM subscriptions
+___________________________________________________
+
+MS SQL	Решение:
+SELECT count(distinct(sb_subscriber)) count_sub
+FROM subscriptions
+___________________________________________________
+
+Oracle	Решение:
+SELECT count(distinct("sb_subscriber")) "count_sub"
+FROM "subscriptions"

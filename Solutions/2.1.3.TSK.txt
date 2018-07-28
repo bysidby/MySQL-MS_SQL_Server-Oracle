@@ -1,0 +1,16 @@
+﻿Задание 2.1.3.TSK.A: показать, сколько всего читателей зарегистриро-вано в библиотеке.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT count(s_id) count_sub 
+FROM subscribers
+___________________________________________________
+
+MS SQL	Решение:
+SELECT count(s_id) count_sub
+FROM subscribers
+___________________________________________________
+
+Oracle	Решение:
+SELECT count("s_id") "count_sub"
+FROM "subscribers"
