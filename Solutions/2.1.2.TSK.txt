@@ -1,0 +1,35 @@
+﻿Задание 2.1.2.TSK.A: показать без повторений идентификаторы книг, ко-торые были взяты читателями
+___________________________________________________
+
+MySQL	Решение: 
+SELECT distinct sb_book FROM subscriptions
+___________________________________________________
+
+MS SQL	Решение:
+SELECT distinct sb_book FROM subscriptions
+___________________________________________________
+
+Oracle	Решение:
+SELECT distinct "sb_book" FROM "subscriptions"
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.1.2.TSK.B: показать по каждой книге, которую читатели брали в библиотеке, количество выдач этой книги читателям.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT sb_book, count(sb_book) count_num 
+FROM subscriptions 
+group by sb_book
+___________________________________________________
+
+MS SQL	Решение:
+SELECT sb_book, count(sb_book) count_num 
+FROM subscriptions 
+group by sb_book
+___________________________________________________
+
+Oracle	Решение:
+SELECT "sb_book", count("sb_book") "count_num"
+FROM "subscriptions"
+group by "sb_book"
