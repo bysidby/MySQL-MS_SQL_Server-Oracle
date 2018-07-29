@@ -1,0 +1,164 @@
+﻿Задание 2.1.8.TSK.A: показать идентификатор одного (любого) читателя, взявшего в библиотеке больше всего книг.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `sb_subscriber`
+
+FROM (select `sb_subscriber`, count(`sb_subscriber`)
+	
+	from `subscriptions`
+    
+	group by `sb_subscriber`
+    
+	order by count(`sb_subscriber`) desc) as `a`
+
+limit 1
+
+___________________________________________________
+
+MS SQL	Решение:
+SELECT top 1 [a].[sb_subscriber]
+
+FROM (select [sb_subscriber], count([sb_subscriber]) as a 
+	from [subscriptions] 
+	group by [sb_subscriber]) as a
+
+order by [a] desc
+
+___________________________________________________
+
+Oracle	Решение:
+SELECT "sb_subscriber"
+FROM (select "sb_subscriber", count("sb_subscriber") a, ROW_NUMBER() OVER(ORDER BY count("sb_subscriber") DESC) AS "rn"
+      from "subscriptions" 
+      group by "sb_subscriber") a
+where "rn" = 1
+
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.1.8.TSK.B: показать идентификаторы всех «самых читающих читателей», взявших в библиотеке больше всего книг.
+
+___________________________________________________
+
+MySQL	Решение: 
+select `sb_subscriber`
+
+from (select `sb_subscriber`, count(`sb_subscriber`) as `count_sb`
+	
+	from `subscriptions`
+   
+	 group by `sb_subscriber`) as a
+
+having max(`count_sb`)
+
+___________________________________________________
+
+MS SQL	Решение:
+select sb_subscriber
+
+from (select sb_subscriber, count(sb_subscriber) as count_sb
+				
+	from subscriptions
+				
+	group by sb_subscriber) as a
+
+where a.count_sb = (select max(count_sb) as max_count_sb
+			from (select sb_subscriber, count(sb_subscriber) as count_sb
+										from subscriptions
+							
+				group by sb_subscriber) as b)
+
+___________________________________________________
+
+Oracle	Решение:
+select "sb_subscriber"
+from (select "sb_subscriber", count("sb_subscriber") as "count_sb"
+        from "subscriptions"
+        group by "sb_subscriber") a
+where "count_sb" = (select max("count_sb") as "max_count_sb"
+          from (select "sb_subscriber", count("sb_subscriber") as "count_sb"
+              from "subscriptions"
+              group by "sb_subscriber") b)
+
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.1.8.TSK.C: показать идентификатор «читателя-рекордсмена», взявшего в библиотеке больше книг, чем любой другой читатель.
+
+___________________________________________________
+
+MySQL	Решение: 
+WITH `ranked` 
+
+	AS (select `sb_subscriber`, count(`sb_subscriber`) as `count_sb`
+		
+		from `subscriptions`
+		
+		group by `sb_subscriber`)
+
+SELECT `sb_subscriber`
+
+FROM `ranked` AS `ext` 
+
+WHERE `count_sb` > ALL (SELECT `count_sb` 
+						
+			FROM `ranked` AS `int` 
+						
+			WHERE `ext`.`sb_subscriber` <> `int`.`sb_subscriber`)
+
+___________________________________________________
+
+MS SQL	Решение:
+WITH ranked 
+	
+	AS (select sb_subscriber, count(sb_subscriber) as count_sb
+		
+		from subscriptions
+		
+		group by sb_subscriber)
+
+SELECT sb_subscriber
+
+FROM ranked AS ext 
+
+WHERE count_sb > ALL (SELECT count_sb
+			FROM ranked AS int 
+
+			WHERE ext.sb_subscriber <> int.sb_subscriber)
+___________________________________________________
+
+Oracle	Решение:
+WITH "ranked" 
+  AS (select "sb_subscriber", count("sb_subscriber") as "count_sb"
+    from "subscriptions"
+    group by "sb_subscriber")
+SELECT "sb_subscriber"
+FROM "ranked" "ext" 
+WHERE "count_sb" > ALL (SELECT "count_sb" 
+            FROM "ranked" "int" 
+            WHERE "ext"."sb_subscriber" <> "int"."sb_subscriber")
+
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.1.8.TSK.D: написать второй вариант решения задачи 2.1.8.d (основанный на общем табличном выражении) для MySQL, проэмулировав общее табличное выражение через подзапросы.
+
+___________________________________________________
+
+MySQL	Решение: 
+WITH `ranked` 
+
+	AS (SELECT `b_id`, `b_name`, `b_quantity`
+ 
+		FROM `books`)
+
+SELECT `b_name`, `b_quantity` 
+
+FROM `books` AS `ext` 
+
+WHERE `b_quantity` > ALL (SELECT `b_quantity`
+			FROM `ranked` 
+ 
+			WHERE `ext`.`b_id` != `ranked`.`b_id`)
+

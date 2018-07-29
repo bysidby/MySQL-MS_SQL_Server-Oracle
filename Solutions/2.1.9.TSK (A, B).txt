@@ -1,0 +1,133 @@
+﻿Задание 2.1.9.TSK.A: показать, сколько в среднем экземпляров книг есть в библиотеке.
+___________________________________________________
+
+MySQL	Решение: 
+with `absent`
+
+--  определим, сумму дней отсутсвия книг в библиотеке по каждой книге
+
+	AS (SELECT SUM(`diff`) AS `avg_days` 
+
+		FROM (
+
+			SELECT DATEDIFF(`sb_finish`, `sb_start`) AS `diff` 
+			FROM `subscriptions`
+			WHERE ( `sb_finish` <= CURDATE() AND `sb_is_active` = 'N' ) 
+				OR ( `sb_finish` > CURDATE() AND `sb_is_active` = 'Y' ) 
+			UNION ALL 
+
+			SELECT DATEDIFF(CURDATE(), `sb_start`) AS `diff`
+			FROM `subscriptions` 
+			WHERE ( `sb_finish` <= CURDATE() AND `sb_is_active` = 'Y' )
+				OR ( `sb_finish` > CURDATE() AND `sb_is_active` = 'N' ) ) AS `diffs`),
+
+	`books_l`
+ 
+-- определим количество дней работы библиотеки умноженное на количество книг
+	
+	AS (SELECT DATEDIFF(CURDATE(), min(`sb_start`))* (select sum(`b_quantity`) from `books`) AS `books_life`
+ 
+		FROM `subscriptions`),
+
+	`lib_l`
+ 
+-- определим количество дней работы библиотеки
+	
+	AS (SELECT DATEDIFF(CURDATE(), min(`sb_start`)) AS `lib_life`
+ 
+		FROM `subscriptions`)
+
+select (`books_life` - `avg_days`) / `lib_life` as `avg_book`
+
+from `absent`, `books_l`, `lib_l`
+___________________________________________________
+
+MS SQL	Решение:
+with [absent]
+
+--  определим, сумму дней отсутсвия книг в библиотеке по каждой книге
+
+	AS (SELECT SUM(CAST([diff] AS FLOAT)) AS [avg_days]
+ 
+		FROM ( SELECT DATEDIFF(day, [sb_start], [sb_finish]) AS [diff]
+ 
+				FROM [subscriptions]
+ 
+				WHERE ( [sb_finish] <= CONVERT(date, GETDATE()) AND [sb_is_active] = 'N' )
+
+					OR ( [sb_finish] > CONVERT(date, GETDATE()) AND [sb_is_active] = 'Y' )
+ 
+				UNION ALL
+ 
+				SELECT DATEDIFF(day, [sb_start], CONVERT(date, GETDATE())) AS [diff]
+ 
+				FROM [subscriptions]
+ 
+				WHERE ( [sb_finish] <= CONVERT(date, GETDATE()) AND [sb_is_active] = 'Y' )
+ 
+					OR ( [sb_finish] > CONVERT(date, GETDATE()) AND [sb_is_active] = 'N' ) ) AS [diffs]),
+
+	[books_l]
+
+    -- определим количество дней работы библиотеки умноженное на количество книг
+
+	AS (SELECT DATEDIFF(day, min([sb_start]), CONVERT(date, GETDATE())) * (select sum([b_quantity]) from [books]) AS [books_life]
+
+		FROM subscriptions),
+
+	[lib_l]
+
+    -- определим количество дней работы библиотеки
+
+	AS (SELECT DATEDIFF(day, min([sb_start]), CONVERT(date, GETDATE())) AS lib_life
+ 
+		FROM subscriptions)
+
+select ([books_life] - [avg_days]) / [lib_life] as [avg_book]
+
+from [absent], [books_l], [lib_l]
+___________________________________________________
+
+Oracle	Решение:
+with "absent"
+--  определим, сумму дней отсутсвия книг в библиотеке по каждой книге
+  AS (
+      SELECT SUM("diff") AS "avg_days"
+      FROM ( SELECT ("sb_finish" - "sb_start") AS "diff" 
+             FROM "subscriptions" 
+             WHERE ( "sb_finish" <= TRUNC(SYSDATE) AND "sb_is_active" = 'N' )
+                  OR ( "sb_finish" > TRUNC(SYSDATE) AND "sb_is_active" = 'Y' )
+             UNION ALL 
+             SELECT (TRUNC(SYSDATE) - "sb_start") AS "diff" FROM "subscriptions" 
+             WHERE ( "sb_finish" <= TRUNC(SYSDATE) AND "sb_is_active" = 'Y' ) 
+                  OR ( "sb_finish" > TRUNC(SYSDATE) AND "sb_is_active" = 'N' )) "diffs"),
+      "books_l"
+-- определим количество книг в библиотеке
+  AS (select sum("b_quantity") as "books_life" from "books"),
+     "lib_l"
+-- определим количество дней работы библиотеки
+  AS (SELECT (TRUNC(SYSDATE) - min("sb_start")) AS "lib_life" 
+      FROM "subscriptions")
+select (("books_life"*"lib_life") - "avg_days") / "lib_life" as "avg_book"
+from "absent", "books_l", "lib_l"
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.1.9.TSK.B: показать в днях, сколько в среднем времени чита-тели уже зарегистрированы в библиотеке (временем регистрации считать диапазон от первой даты получения читателем книги до текущей даты).
+___________________________________________________
+
+MySQL	Решение: 
+
+
+___________________________________________________
+
+MS SQL	Решение:
+
+
+___________________________________________________
+
+Oracle	Решение:
+
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
