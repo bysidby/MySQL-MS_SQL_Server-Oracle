@@ -1,0 +1,36 @@
+﻿Задание 2.1.10.TSK.A: переписать решение 2.1.10.c так, чтобы при под-счёте возвращённых и невозвращённых книг СУБД оперировала исход-ными значениями поля sb_is_active (т.е. Y и N), а преобразование в «Returned» и «Not returned» происходило после подсчёта.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT IF(`sb_is_active` = 'Y', 'Not returned', 'Returned') AS `status`, `books`
+
+from (
+	SELECT `sb_is_active`, COUNT(`sb_id`) AS `books` 
+
+	FROM `subscriptions` 
+	
+GROUP BY `sb_is_active` 
+
+	ORDER BY `sb_is_active` DESC
+	) as `a`
+___________________________________________________
+
+MS SQL	Решение:
+SELECT (CASE WHEN [sb_is_active] = 'Y' THEN 'Not returned' ELSE 'Returned' END) AS [status], books
+
+from (
+	SELECT sb_is_active, COUNT(sb_id) AS books
+ 
+	FROM subscriptions
+	GROUP BY sb_is_active
+ 
+	) as a
+___________________________________________________
+
+Oracle	Решение:
+SELECT (CASE WHEN "sb_is_active" = 'Y' THEN 'Not returned' ELSE 'Returned' END) AS "status", "books"
+from (
+	SELECT "sb_is_active", COUNT("sb_id") AS "books" 
+	FROM "subscriptions" 
+	GROUP BY "sb_is_active" 
+	) a

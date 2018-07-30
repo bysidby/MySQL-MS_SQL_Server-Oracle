@@ -117,17 +117,66 @@ from "absent", "books_l", "lib_l"
 ___________________________________________________
 
 MySQL	Решение: 
+SELECT AVG(`diff`) AS `avg_days`
 
+from (
+
+	SELECT DATEDIFF(CURDATE(), `sb_start`) AS `diff`
+
+	FROM (
+
+		-- находим минимальную дату для каждого читателя
+
+		select distinct `sb_subscriber`, `sb_start`
+
+		from `subscriptions` as `a`
+ 
+		where `sb_start` = all (select min(`sb_start`) as `min_st`
+
+				from `subscriptions` as `b`
+
+				where `a`.`sb_subscriber` = `b`.`sb_subscriber`)
+	
+		) as `c`
+
+	) as `d`
 
 ___________________________________________________
 
 MS SQL	Решение:
+SELECT AVG(CAST([diff] AS FLOAT)) AS [avg_days]
+from (
+	SELECT DATEDIFF(day, [sb_start], CONVERT(date, GETDATE())) AS [diff]
+	FROM (
 
+		-- находим минимальную дату для каждого читателя
+		select distinct sb_subscriber, sb_start
+
+		from subscriptions as a
+ 		where sb_start = all (select min(sb_start) as min_st
+
+				from subscriptions as b
+
+				where a.sb_subscriber = b.sb_subscriber)
+
+		) as c
+	) as d
 
 ___________________________________________________
 
 Oracle	Решение:
-
+SELECT AVG("diff") AS "avg_days"
+from (
+  SELECT (TRUNC(SYSDATE) - "sb_start") AS "diff"
+  FROM (
+    -- находим минимальную дату для каждого читателя
+    select distinct "sb_subscriber", "sb_start"
+    from "subscriptions" "a"
+    where "sb_start" = all (select min("sb_start") as "min_st"
+        from "subscriptions" "b"
+        where "a"."sb_subscriber" = "b"."sb_subscriber")
+                 ) "c"
+            ) "d"
 
 -------------------------------------------------------------------------------------------------------------------------------------
 
