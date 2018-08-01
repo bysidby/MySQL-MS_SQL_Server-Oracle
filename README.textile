@@ -3,3 +3,21 @@
 Решение заданий для самостоятельной проработки по книге Святослава Куликова "Работа с MySQL, MS SQL Server и Oracle в примерах".
 
 Версия книги 1.0.2 от 07.08.2017.
+
+Задания решались:
+
+<h2 align="center">MySQL:</h2>
+	
+MySQL 8.0 + MySQL Workbench 8.0
+
+___________________________________________________
+
+<h2 align="center">MS SQL:</h2>
+
+MS SQL Server 2017 + MS SQL Server Visual Studio 17.8.1
+
+___________________________________________________
+
+<h2 align="center">Oracle:</h2>
+
+Oracle 12c Release 2 + PLSQL Developer 12
