@@ -1,0 +1,52 @@
+﻿Задание 2.2.3.TSK.A: показать список книг, которые когда-либо были взяты читателями.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `b_name` 
+
+FROM `books` 
+
+WHERE `b_id` IN (SELECT DISTINCT `sb_book`
+	               FROM `subscriptions`)
+___________________________________________________
+
+MS SQL	Решение:
+SELECT b_name 
+FROM books 
+WHERE b_id IN (SELECT DISTINCT sb_book
+	               FROM subscriptions)
+___________________________________________________
+
+Oracle	Решение:
+SELECT "b_name" 
+FROM "books" 
+WHERE "b_id" IN (SELECT DISTINCT "sb_book" 
+				FROM "subscriptions")
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.2.3.TSK.B: показать список книг, которые никто из читателей никогда не брал.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `b_name` 
+
+FROM `books` 
+
+WHERE `b_id` NOT IN (SELECT DISTINCT `sb_book` 
+
+				FROM `subscriptions`)
+
+___________________________________________________
+
+MS SQL	Решение:
+SELECT b_name 
+FROM books 
+WHERE b_id NOT IN (SELECT DISTINCT sb_book
+	               FROM subscriptions)
+___________________________________________________
+
+Oracle	Решение:
+SELECT "b_name" 
+FROM "books" 
+WHERE "b_id" NOT IN (SELECT DISTINCT "sb_book" 
+				FROM "subscriptions")

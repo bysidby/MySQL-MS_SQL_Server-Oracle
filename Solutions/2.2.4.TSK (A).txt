@@ -1,0 +1,35 @@
+﻿Задание 2.2.4.TSK.A: показать список книг, ни один экземпляр которых сейчас не находится на руках у читателей.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `b_name` 
+
+FROM `books` 
+
+WHERE `b_id` NOT IN (SELECT DISTINCT `sb_book` 
+
+		FROM `subscriptions`
+                
+		where `sb_is_active` = "Y")
+___________________________________________________
+
+MS SQL	Решение:
+SELECT b_name 
+
+FROM books 
+
+WHERE b_id NOT IN (SELECT DISTINCT sb_book
+ 
+		FROM subscriptions
+
+              		where sb_is_active = 'Y')
+___________________________________________________
+
+Oracle	Решение:
+SELECT "b_name" 
+FROM "books" 
+WHERE "b_id" NOT IN (SELECT DISTINCT "sb_book" 
+        FROM "subscriptions"
+                where "sb_is_active" = 'Y')
+-------------------------------------------------------------------------------------------------------------------------------------
+

@@ -1,0 +1,68 @@
+﻿Задание 2.2.1.TSK.A: показать список книг, у которых более одного ав-тора.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `b_name`
+
+from `books`
+
+join `m2m_books_authors` using (`b_id`)
+
+group by `b_name`
+
+having count(`a_id`) >= 2
+___________________________________________________
+
+MS SQL	Решение:
+SELECT [b_name]
+
+from [books]
+
+join [m2m_books_authors] on [books].[b_id] = [m2m_books_authors].[b_id]
+
+group by [b_name]
+having count([a_id]) > 1
+___________________________________________________
+
+Oracle	Решение:
+SELECT "b_name"
+from "books"
+join "m2m_books_authors" using ("b_id")
+group by "b_name"
+having count("a_id") >= 2
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.2.1.TSK.B: показать список книг, относящихся ровно к одному жанру.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `b_name`
+
+from `books`
+
+join `m2m_books_genres` using (`b_id`)
+
+group by `b_name`
+
+having count(`g_id`) = 1
+
+___________________________________________________
+
+MS SQL	Решение:
+SELECT [b_name]
+
+from [books]
+
+join [dbo].[m2m_books_genres] on [books].[b_id] = [dbo].[m2m_books_genres].[b_id]
+
+group by [b_name]
+having count([g_id]) = 1
+___________________________________________________
+
+Oracle	Решение:
+SELECT "b_name"
+from "books"
+join "m2m_books_genres" using ("b_id")
+group by "b_name"
+having count("g_id") = 1

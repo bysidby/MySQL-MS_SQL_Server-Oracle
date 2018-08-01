@@ -1,0 +1,105 @@
+﻿Задание 2.2.2.TSK.A: показать все книги с их жанрами (дублирование названий книг не допускается).
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `b_name`
+ AS `book`,
+
+	GROUP_CONCAT(`g_name` ORDER BY `g_name` SEPARATOR ', ')  AS `genres`
+
+FROM   `books`
+
+JOIN `m2m_books_genres` USING(`b_id`) 
+JOIN `genres` USING(`g_id`)
+
+GROUP  BY `b_id`
+ORDER  BY `b_name`
+___________________________________________________
+
+MS SQL	Решение:
+WITH [prepared_data] 
+	AS (SELECT [books].[b_id], [b_name], [g_name] 
+	FROM [books] 
+	JOIN [m2m_books_genres] ON [books].[b_id] = [m2m_books_genres].[b_id] 
+	JOIN [genres] ON [m2m_books_genres].[g_id] = [genres].[g_id] ) 
+SELECT [outer].[b_name] AS [book], STUFF ((SELECT ', ' + [inner].[g_name] 
+				FROM [prepared_data] AS [inner] 
+				WHERE [outer].[b_id] = [inner].[b_id] 
+				ORDER BY [inner].[g_name] FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'), 1, 2, '') AS [genres] 
+FROM [prepared_data] AS [outer] 
+GROUP BY [outer].[b_id], [outer].[b_name]
+___________________________________________________
+
+Oracle	Решение:
+SELECT "b_name" AS "book", 
+	UTL_RAW.CAST_TO_NVARCHAR2 
+	( 
+		LISTAGG 
+		( 
+			UTL_RAW.CAST_TO_RAW("g_name"), 
+			UTL_RAW.CAST_TO_RAW(N', ') 
+		) 
+		WITHIN GROUP (ORDER BY "g_name") 
+	)
+	AS "genres" 
+FROM "books" 
+JOIN "m2m_books_genres" USING ("b_id") 
+JOIN "genres" USING("g_id") 
+GROUP BY "b_id", "b_name"
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.2.2.TSK.B: показать всех авторов со всеми написанными ими книгами и всеми жанрами, в которых они работали (дублирование имён авторов, названий книг и жанров не допускается).
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `a_name` AS `author`,
+ 
+	GROUP_CONCAT(DISTINCT `b_name` ORDER BY `b_name` SEPARATOR ', ') AS `book(s)`,
+	GROUP_CONCAT(DISTINCT `g_name` ORDER BY `g_name` SEPARATOR ', ') AS `genre(s)` 
+
+FROM `authors` 
+
+JOIN `m2m_books_authors` USING(`a_id`) 
+
+JOIN `books` USING(`b_id`) 
+
+JOIN `m2m_books_genres` USING(`b_id`)
+ 
+JOIN `genres` USING(`g_id`) 
+
+GROUP BY `a_id` 
+
+ORDER BY `a_name`
+
+___________________________________________________
+
+MS SQL	Решение:
+WITH [prepared_data] 
+	AS (SELECT [books].[b_id], [authors].[a_id], [b_name], [a_name], [g_name] 
+	FROM [books] 
+	JOIN [m2m_books_genres] ON [books].[b_id] = [m2m_books_genres].[b_id] 
+	JOIN [genres] ON [m2m_books_genres].[g_id] = [genres].[g_id] 
+	JOIN [m2m_books_authors] ON [books].[b_id] = [m2m_books_authors].[b_id] 
+	JOIN [authors] ON [m2m_books_authors].[a_id] = [authors].[a_id] 
+		) 
+SELECT [outer].[a_name] 
+	AS [author], 
+	STUFF ((SELECT DISTINCT ', ' + [inner].[b_name] 
+			FROM [prepared_data] AS [inner] 
+			WHERE [outer].[a_id] = [inner].[a_id] 
+			ORDER BY ', ' + [inner].[b_name] 
+			FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'), 1, 2, '') 
+	AS [book(s)], 
+	STUFF ((SELECT DISTINCT ', ' + [inner].[g_name] 
+		FROM [prepared_data] AS [inner] 
+		WHERE [outer].[a_id] = [inner].[a_id] 
+		ORDER BY ', ' + [inner].[g_name] 
+		FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'), 1, 2, '') 
+	AS [genre(s)] 
+FROM [prepared_data] AS [outer] 
+GROUP BY [outer].[a_id], 
+		[outer].[a_name]
+___________________________________________________
+
+Oracle	Решение:
+нет решения

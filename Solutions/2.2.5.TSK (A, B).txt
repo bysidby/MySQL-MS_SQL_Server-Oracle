@@ -1,0 +1,100 @@
+﻿Задание 2.2.5.TSK.A: показать книги, написанные Пушкиным и/или Ази-мовым (индивидуально или в соавторстве — не важно).
+___________________________________________________
+
+MySQL	Решение: 
+SELECT distinct `books`.`b_name`
+ 
+FROM `books`
+ 
+join `m2m_books_authors` on `books`.`b_id` = `m2m_books_authors`.`b_id`
+
+join `authors` on `m2m_books_authors`.`a_id` = `authors`.`a_id`
+
+where `authors`.`a_id` in (2, 7)
+___________________________________________________
+
+MS SQL	Решение:
+SELECT distinct books.b_name 
+FROM books
+ 
+join m2m_books_authors on books.b_id = m2m_books_authors.b_id
+
+join authors on m2m_books_authors.a_id = authors.a_id
+
+where authors.a_id in (2, 7)
+___________________________________________________
+
+Oracle	Решение:
+SELECT distinct "books"."b_name" 
+FROM "books" 
+join "m2m_books_authors" on "books"."b_id" = "m2m_books_authors"."b_id"
+join "authors" on "m2m_books_authors"."a_id" = "authors"."a_id"
+where "authors"."a_id" in (2, 7)
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.2.5.TSK.B: показать книги, написанные Карнеги и Страустру-пом в соавторстве.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT distinct `books`.`b_name`
+
+FROM `books`
+
+join `m2m_books_authors` on `books`.`b_id` = `m2m_books_authors`.`b_id`
+
+join `authors` on `m2m_books_authors`.`a_id` = `authors`.`a_id`
+
+where `authors`.`a_id` in (3, 6)
+
+	and `books`.`b_id` in
+ 
+		(
+
+
+			SELECT distinct `books`.`b_id`
+
+			FROM `books`
+ 
+			join `m2m_books_authors` on `books`.`b_id` = `m2m_books_authors`.`b_id`
+
+			join `authors` on `m2m_books_authors`.`a_id` = `authors`.`a_id`
+
+			group by `books`.`b_id`
+
+			having count(`books`.`b_id`) > 1
+
+		)
+___________________________________________________
+
+MS SQL	Решение:
+SELECT distinct books.b_name
+FROM books
+join m2m_books_authors on books.b_id = m2m_books_authors.b_id
+join authors on m2m_books_authors.a_id = authors.a_id
+where authors.a_id in (3, 6)
+	and books.b_id in
+ 		(
+			SELECT distinct books.b_id
+			FROM books
+ 			join m2m_books_authors on books.b_id = m2m_books_authors.b_id
+			join authors on m2m_books_authors.a_id = authors.a_id
+			group by books.b_id
+			having count(books.b_id) > 1
+		)
+___________________________________________________
+
+Oracle	Решение:
+SELECT distinct "books"."b_name"
+FROM "books"
+join "m2m_books_authors" on "books"."b_id" = "m2m_books_authors"."b_id"
+join "authors" on "m2m_books_authors"."a_id" = "authors"."a_id"
+where "authors"."a_id" in (3, 6)
+  and "books"."b_id" in
+     (
+      SELECT distinct "books"."b_id"
+      FROM "books"
+      join "m2m_books_authors" on "books"."b_id" = "m2m_books_authors"."b_id"
+      join "authors" on "m2m_books_authors"."a_id" = "authors"."a_id"
+      group by "books"."b_id"
+      having count("books"."b_id") > 1
+    )

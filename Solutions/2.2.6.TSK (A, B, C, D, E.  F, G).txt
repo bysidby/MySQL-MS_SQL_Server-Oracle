@@ -1,0 +1,242 @@
+﻿Задание 2.2.6.TSK.A: показать авторов, написавших более одной книги.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `a_name`
+
+FROM `books`
+
+join `m2m_books_authors` on `books`.`b_id` = `m2m_books_authors`.`b_id`
+
+join `authors` on `m2m_books_authors`.`a_id` = `authors`.`a_id`
+
+group by `a_name`
+
+having count(`a_name`) > 1
+___________________________________________________
+
+MS SQL	Решение:
+SELECT a_name
+FROM books
+join m2m_books_authors on books.b_id = m2m_books_authors.b_id
+join authors on m2m_books_authors.a_id = authors.a_id
+group by a_name
+having count(a_name) > 1
+___________________________________________________
+
+Oracle	Решение:
+SELECT "a_name"
+FROM "books"
+join "m2m_books_authors" on "books"."b_id" = "m2m_books_authors"."b_id"
+join "authors" on "m2m_books_authors"."a_id" = "authors"."a_id"
+group by "a_name"
+having count("a_name") > 1
+
+-------------------------------------------------------------------------------------------------------------------------------------
+Задание 2.2.6.TSK.B: показать книги, относящиеся к более чем одному жанру.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `b_name`
+FROM `books`
+
+join `m2m_books_genres` on `books`.`b_id` = `m2m_books_genres`.`b_id`
+
+group by `b_name`
+
+having count(`g_id`) > 1
+___________________________________________________
+
+MS SQL	Решение:
+SELECT b_name
+FROM books
+join m2m_books_genres on books.b_id = m2m_books_genres.b_id
+
+group by b_name
+
+having count(g_id) > 1
+___________________________________________________
+
+Oracle	Решение:
+SELECT "b_name"
+FROM "books"
+join "m2m_books_genres" on "books"."b_id" = "m2m_books_genres"."b_id"
+group by "b_name"
+having count("g_id") > 1
+
+-------------------------------------------------------------------------------------------------------------------------------------
+Задание 2.2.6.TSK.C: показать читателей, у которых сейчас на руках больше одной книги.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `s_name`
+
+FROM `subscriptions`
+
+join `subscribers` on `sb_subscriber` = `s_id`
+
+group by `s_id`, `s_name`, `sb_is_active`
+
+having `sb_is_active` = "Y"
+
+and count(`sb_subscriber`) > 1
+___________________________________________________
+
+MS SQL	Решение:
+SELECT s_name
+FROM subscriptions
+join subscribers on sb_subscriber = s_id
+group by s_id, s_name, sb_is_active
+having sb_is_active = 'Y'
+and count(sb_subscriber) > 1
+___________________________________________________
+
+Oracle	Решение:
+SELECT "s_name"
+FROM "subscriptions"
+join "subscribers" on "sb_subscriber" = "s_id"
+group by "s_id", "s_name", "sb_is_active"
+having "sb_is_active" = 'Y'
+and count("sb_subscriber") > 1
+
+-------------------------------------------------------------------------------------------------------------------------------------
+Задание 2.2.6.TSK.D: показать, сколько экземпляров каждой книги сейчас выдано читателям.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `b_name`, count(`b_name`) as `count_name`
+
+FROM `books`
+
+join `subscriptions` on `sb_book` = `b_id`
+
+group by `b_name`,  `sb_is_active`
+
+having `sb_is_active` = "Y"
+___________________________________________________
+
+MS SQL	Решение:
+SELECT b_name, count(b_name) as count_name
+
+FROM books
+
+join subscriptions on sb_book = b_id
+
+group by b_name,  sb_is_active
+
+having sb_is_active = 'Y'
+___________________________________________________
+
+Oracle	Решение:
+SELECT "b_name", count("b_name") as "count_name"
+FROM "books"
+join "subscriptions" on "sb_book" = "b_id"
+group by "b_name",  "sb_is_active"
+having "sb_is_active" = 'Y'
+
+-------------------------------------------------------------------------------------------------------------------------------------
+Задание 2.2.6.TSK.E: показать всех авторов и количество экземпляров книг по каждому автору.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `a_name`, sum(`b_quantity`) as `count_books`
+
+FROM `authors`
+join `m2m_books_authors` on `authors`.`a_id` = `m2m_books_authors`.`a_id`
+
+join `books` on `books`.`b_id` = `m2m_books_authors`.`b_id`
+
+group by `a_name`
+___________________________________________________
+
+MS SQL	Решение:
+SELECT a_name, sum(b_quantity) as count_books
+
+FROM authors
+join m2m_books_authors on authors.a_id = m2m_books_authors.a_id
+
+join books on books.b_id = m2m_books_authors.b_id
+
+group by a_name
+___________________________________________________
+
+Oracle	Решение:
+SELECT "a_name", sum("b_quantity") as "count_books"
+FROM "authors"
+join "m2m_books_authors" on "authors"."a_id" = "m2m_books_authors"."a_id"
+join "books" on "books"."b_id" = "m2m_books_authors"."b_id"
+group by "a_name"
+
+-------------------------------------------------------------------------------------------------------------------------------------
+Задание 2.2.6.TSK.F: показать всех авторов и количество книг (не экзем-пляров книг, а «книг как изданий») по каждому автору.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `a_name`, count(`b_quantity`) as `count_books`
+
+FROM `authors`
+join `m2m_books_authors` on `authors`.`a_id` = `m2m_books_authors`.`a_id`
+
+join `books` on `books`.`b_id` = `m2m_books_authors`.`b_id`
+
+group by `a_name`
+___________________________________________________
+
+MS SQL	Решение:
+SELECT a_name, count(b_quantity) as count_books
+
+FROM authors
+join m2m_books_authors on authors.a_id = m2m_books_authors.a_id
+
+join books on books.b_id = m2m_books_authors.b_id
+
+group by a_name
+___________________________________________________
+
+Oracle	Решение:
+SELECT "a_name", count("b_quantity") as "count_books"
+FROM "authors"
+join "m2m_books_authors" on "authors"."a_id" = "m2m_books_authors"."a_id"
+join "books" on "books"."b_id" = "m2m_books_authors"."b_id"
+group by "a_name"
+
+-------------------------------------------------------------------------------------------------------------------------------------
+Задание 2.2.6.TSK.G: показать всех читателей, не вернувших книги, и ко-личество невозвращённых книг по каждому такому читателю.
+___________________________________________________
+
+MySQL	Решение: 
+SELECT `s_name`, count(`sb_is_active`) as `count_books`
+FROM `subscribers`
+
+
+join `subscriptions` on `subscribers`.`s_id` = `subscriptions`.`sb_subscriber`
+
+
+group by `s_id`, `sb_is_active`
+
+
+having `sb_is_active` = 'Y'
+___________________________________________________
+
+MS SQL	Решение:
+SELECT s_name, count(sb_is_active) as count_books
+FROM subscribers
+
+
+join subscriptions on subscribers.s_id = subscriptions.sb_subscriber
+
+
+group by s_id, s_name, sb_is_active
+
+
+having sb_is_active = 'Y'
+___________________________________________________
+
+Oracle	Решение:
+SELECT "s_name", count("sb_is_active") as "count_books"
+FROM "subscribers"
+join "subscriptions" on "subscribers"."s_id" = "subscriptions"."sb_subscriber"
+group by "s_id", "s_name", "sb_is_active"
+having "sb_is_active" = 'Y'
+
+-------------------------------------------------------------------------------------------------------------------------------------
