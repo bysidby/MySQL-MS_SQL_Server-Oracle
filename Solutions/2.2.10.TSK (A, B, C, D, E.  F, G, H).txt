@@ -1,0 +1,231 @@
+﻿Задание 2.2.10.TSK.A: показать информацию о том, кто из читателей и когда брал в библиотеке книги.
+___________________________________________________
+
+MySQL	Решение: 
+select `s_name`, `sb_start`
+from `subscriptions`
+join `subscribers` on `subscribers`.`s_id` = `subscriptions`.`sb_subscriber`
+
+___________________________________________________
+
+MS SQL	Решение:
+select s_name, sb_start
+from subscriptions
+join subscribers on subscribers.s_id = subscriptions.sb_subscriber
+
+___________________________________________________
+
+Oracle	Решение:
+select "s_name", "sb_start"
+from "subscriptions"
+join "subscribers" on "subscribers"."s_id" = "subscriptions"."sb_subscriber"
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+Задание 2.2.10.TSK.B: показать информацию обо всех читателях и датах выдачи им в библиотеке книг.
+___________________________________________________
+
+MySQL	Решение: 
+select `s_name`, `sb_start`
+from `subscriptions`
+right join `subscribers` on `subscribers`.`s_id` = `subscriptions`.`sb_subscriber`
+
+___________________________________________________
+
+MS SQL	Решение:
+select s_name, sb_start
+from subscriptions
+right join subscribers on subscribers.s_id = subscriptions.sb_subscriber
+
+___________________________________________________
+
+Oracle	Решение:
+select "s_name", "sb_start"
+from "subscriptions"
+right join "subscribers" on "subscribers"."s_id" = "subscriptions"."sb_subscriber"
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+Задание 2.2.10.TSK.C: показать информацию о читателях, никогда не бравших в библиотеке книги.
+___________________________________________________
+
+MySQL	Решение: 
+select `s_name`, `sb_start`
+from `subscriptions`
+right join `subscribers` on `subscribers`.`s_id` = `subscriptions`.`sb_subscriber`
+WHERE `sb_start` IS NULL
+
+___________________________________________________
+
+MS SQL	Решение:
+select s_name, sb_start
+from subscriptions
+right join subscribers on subscribers.s_id = subscriptions.sb_subscriber
+WHERE sb_start IS NULL
+
+___________________________________________________
+
+Oracle	Решение:
+select "s_name", "sb_start"
+from "subscriptions"
+right join "subscribers" on "subscribers"."s_id" = "subscriptions"."sb_subscriber"
+WHERE "sb_start" IS NULL
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+Задание 2.2.10.TSK.D: показать книги, которые ни разу не были взяты ни-кем из читателей.
+___________________________________________________
+
+MySQL	Решение: 
+select `b_name`, `sb_start` 
+from `books`
+left join `subscriptions` on `books`.`b_id` = `subscriptions`.`sb_book`
+WHERE `sb_start` IS NULL
+
+___________________________________________________
+
+MS SQL	Решение:
+select b_name, sb_start 
+from books
+left join subscriptions on books.b_id = subscriptions.sb_book
+WHERE sb_start IS NULL
+
+___________________________________________________
+
+Oracle	Решение:
+select "b_name", "sb_start" 
+from "books"
+left join "subscriptions" on "books"."b_id" = "subscriptions"."sb_book"
+WHERE "sb_start" IS NULL
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+Задание 2.2.10.TSK.E: показать информацию о том, какие книги в принципе может взять в библиотеке каждый из читателей.
+___________________________________________________
+
+MySQL	Решение: 
+select `s_name`, `b_name` 
+from `books`, `subscribers`
+
+___________________________________________________
+
+MS SQL	Решение:
+select s_name, b_name 
+from books, subscribers
+
+___________________________________________________
+
+Oracle	Решение:
+select "s_name", "b_name" 
+from "books", "subscribers"
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+Задание 2.2.10.TSK.F: показать информацию о том, какие книги (при условии, что он их ещё не брал) каждый из читателей может взять в биб-лиотеке.
+___________________________________________________
+
+MySQL	Решение: 
+select `s_name`, `b_name`
+from `books`, `subscribers`
+where CONCAT_WS(',', `s_id`, `b_id`) not in  (
+    select CONCAT_WS(',', `sb_subscriber`, `sb_book`)
+    from `subscriptions`
+    )
+___________________________________________________
+
+MS SQL	Решение:
+select s_id, s_name, [b_name]
+from books, subscribers
+except
+select [sb_subscriber], s_name, [b_name]
+from [dbo].[subscriptions]
+join [dbo].[subscribers] on [s_id] = [sb_subscriber]
+join [dbo].[books] on [dbo].[books].b_id  =  [dbo].[subscriptions].sb_book
+
+
+___________________________________________________
+
+Oracle	Решение:
+select "s_id", "s_name", "b_name"
+from "books", "subscribers"
+minus
+select "sb_subscriber", "s_name", "b_name"
+from "subscriptions"
+join "subscribers" on "s_id" = "sb_subscriber"
+join "books" on "books"."b_id"  =  "subscriptions"."sb_book"
+
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+Задание 2.2.10.TSK.G: показать информацию о том, какие изданные до 2010-го года книги в принципе может взять в библиотеке каждый из чита-телей.
+___________________________________________________
+
+MySQL	Решение: 
+select `s_name`, `b_name` 
+from `books`, `subscribers`
+where `b_year` < '2010'
+order by `s_name`
+
+___________________________________________________
+
+MS SQL	Решение:
+select s_name, b_name 
+from books, subscribers
+where b_year < '2010'
+order by s_name
+
+___________________________________________________
+
+Oracle	Решение:
+select "s_name", "b_name" 
+from "books", "subscribers"
+where "b_year" < '2010'
+order by "s_name"
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+Задание 2.2.10.TSK.H: показать информацию о том, какие изданные до 2010-го года книги (при условии, что он их ещё не брал) может взять в библиотеке каждый из читателей.
+___________________________________________________
+
+MySQL	Решение: 
+select `s_name`, `b_name`
+from `books`, `subscribers`
+where CONCAT_WS(',', `s_id`, `b_id`) not in  (
+    select CONCAT_WS(',', `sb_subscriber`, `sb_book`)
+    from `subscriptions`
+    )
+and `b_year` < '2010'
+
+___________________________________________________
+
+MS SQL	Решение:
+select s_id, s_name, [b_name]
+from books, subscribers
+where [b_year] < '2010'
+except
+select [sb_subscriber], s_name, [b_name]
+from [dbo].[subscriptions]
+join [dbo].[subscribers] on [s_id] = [sb_subscriber]
+join [dbo].[books] on [dbo].[books].b_id  =  [dbo].[subscriptions].sb_book
+___________________________________________________
+
+Oracle	Решение:
+select "s_id", "s_name", "b_name"
+from "books", "subscribers"
+where "b_year" < '2010'
+minus
+select "sb_subscriber", "s_name", "b_name"
+from "subscriptions"
+join "subscribers" on "s_id" = "sb_subscriber"
+join "books" on "books"."b_id"  =  "subscriptions"."sb_book"
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+

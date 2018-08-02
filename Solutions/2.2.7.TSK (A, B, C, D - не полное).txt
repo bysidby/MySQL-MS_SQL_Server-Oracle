@@ -36,36 +36,92 @@ order by "count_gen_like" desc
 ___________________________________________________
 
 MySQL	Решение: 
-
+select `g_name`
+from `subscriptions`
+join `m2m_books_genres` on `subscriptions`.`sb_book` = `m2m_books_genres`.`b_id`
+right join `genres` on `m2m_books_genres`.`g_id` = `genres`.`g_id`
+group by `g_name`
+having count(`sb_is_active`) =  
+  (
+    select max(`count_gen_like`)
+  from (            
+    select `g_name`, count(`sb_is_active`) as `count_gen_like`
+    from `subscriptions`
+    join `m2m_books_genres` on `subscriptions`.`sb_book` = `m2m_books_genres`.`b_id`
+    right join `genres` on `m2m_books_genres`.`g_id` = `genres`.`g_id`
+    group by `g_name`
+    order by `count_gen_like` desc) as `2`)
 
 ___________________________________________________
 
 MS SQL	Решение:
-
+with prep
+as (select g_name, count(sb_is_active) as count_gen_like
+    from subscriptions
+    join m2m_books_genres on subscriptions.sb_book = m2m_books_genres.b_id
+    right join genres on m2m_books_genres.g_id = genres.g_id
+    group by g_name)
+select g_name
+from prep
+where count_gen_like = (select max(count_gen_like)
+		from prep)
 
 ___________________________________________________
 
 Oracle	Решение:
-
+select "g_name"
+from "subscriptions"
+join "m2m_books_genres" on "subscriptions"."sb_book" = "m2m_books_genres"."b_id"
+right join "genres" on "m2m_books_genres"."g_id" = "genres"."g_id"
+group by "g_name"
+having count("sb_is_active") =  
+  (
+    select max("count_gen_like")
+  from (            
+    select "g_name", count("sb_is_active") as "count_gen_like"
+    from "subscriptions"
+    join "m2m_books_genres" on "subscriptions"."sb_book" = "m2m_books_genres"."b_id"
+    right join "genres" on "m2m_books_genres"."g_id" = "genres"."g_id"
+    group by "g_name"
+    order by "count_gen_like" desc) "2")
 
 -------------------------------------------------------------------------------------------------------------------------------------
 
 
-Задание 2.2.7.TSK.C: показать среднюю читаемость жанров, т.е. среднее значение от того, сколько раз читатели брали книги каждого автора.
+Задание 2.2.7.TSK.C: показать среднюю читаемость жанров, т.е. среднее значение от того, сколько раз читатели брали книги каждого жанра.
 ___________________________________________________
 
 MySQL	Решение: 
-
+select avg(`count_gen_like`) as `avg_like`
+from (
+  select `g_name`, count(`sb_is_active`) as `count_gen_like`
+  from `subscriptions`
+  join `m2m_books_genres` on `subscriptions`.`sb_book` = `m2m_books_genres`.`b_id`
+  right join `genres` on `m2m_books_genres`.`g_id` = `genres`.`g_id`
+  group by `g_name`
+  order by `count_gen_like` desc) as `a`
 
 ___________________________________________________
 
 MS SQL	Решение:
-
+select AVG(CAST(count_gen_like AS FLOAT)) AS avg_like
+from (
+	select g_name, count(sb_is_active) as count_gen_like
+	from subscriptions
+	join m2m_books_genres on subscriptions.sb_book = m2m_books_genres.b_id
+	right join genres on m2m_books_genres.g_id = genres.g_id
+	group by g_name) as a
 
 ___________________________________________________
 
 Oracle	Решение:
-
+select avg("count_gen_like") as "avg_like"
+from (
+      select "g_name", count("sb_is_active") as "count_gen_like"
+      from "subscriptions"
+      join "m2m_books_genres" on "subscriptions"."sb_book" = "m2m_books_genres"."b_id"
+      right join "genres" on "m2m_books_genres"."g_id" = "genres"."g_id"
+      group by "g_name") a
 
 -------------------------------------------------------------------------------------------------------------------------------------
 

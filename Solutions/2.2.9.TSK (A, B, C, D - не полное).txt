@@ -1,0 +1,170 @@
+﻿Задание 2.2.9.TSK.A: показать читателя, последним взявшего в библио-теке книгу.
+___________________________________________________
+
+MySQL	Решение: 
+select `s_name`
+from `subscriptions`
+join `subscribers` on `subscriptions`.`sb_subscriber` = `subscribers`.`s_id`
+where `sb_start` = (select max(`sb_start`)
+		from `subscriptions`)
+___________________________________________________
+
+MS SQL	Решение:
+select s_name
+from subscriptions
+join subscribers on subscriptions.sb_subscriber = subscribers.s_id
+where sb_start = (select max(sb_start)
+		from subscriptions)
+___________________________________________________
+
+Oracle	Решение:
+select "s_name"
+from "subscriptions"
+join "subscribers" on "subscriptions"."sb_subscriber" = "subscribers"."s_id"
+where "sb_start" = (select max("sb_start")
+		from "subscriptions")
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.2.9.TSK.B: показать читателя (или читателей, если их окажется несколько), дольше всего держащего у себя книгу (учитывать только слу-чаи, когда книга не возвращена).
+___________________________________________________
+
+MySQL	Решение: 
+select `s_name`
+from `subscriptions`
+join `subscribers` on `subscriptions`.`sb_subscriber` = `subscribers`.`s_id`
+where `sb_is_active` = 'N'
+and datediff(`sb_finish`, `sb_start`) = (
+        select max(`day`) as `max_day`
+        from (
+            select datediff(`sb_finish`, `sb_start`) as `day`
+            from `subscriptions`
+            join `subscribers` on `subscriptions`.`sb_subscriber` = `subscribers`.`s_id`
+            where `sb_is_active` = 'N'
+            ) as `step1`
+      )
+group by `s_id`
+___________________________________________________
+
+MS SQL	Решение:
+select s_name
+from subscriptions
+join subscribers on subscriptions.sb_subscriber = subscribers.s_id
+where sb_is_active = 'N'
+and datediff(day, sb_start, sb_finish) = (
+        select max(day) as max_day
+        from (
+            select datediff(day, sb_start, sb_finish) as [day]
+            from subscriptions
+            join subscribers on subscriptions.sb_subscriber = subscribers.s_id
+            where sb_is_active = 'N'
+            ) as step1
+      )
+group by s_id, s_name
+___________________________________________________
+
+Oracle	Решение:
+select "s_name"
+from "subscriptions"
+join "subscribers" on "subscriptions"."sb_subscriber" = "subscribers"."s_id"
+where "sb_is_active" = 'N'
+and ("sb_finish" - "sb_start") = (
+        select max("day") as "max_day"
+        from (
+            select ("sb_finish" - "sb_start") as "day"
+            from "subscriptions"
+            where "sb_is_active" = 'N'
+            ) "step1"
+      )
+group by "s_id", "s_name"
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.2.9.TSK.C: показать, какую книгу (или книги, если их несколько) каждый читатель взял в свой последний визит в библиотеку.
+___________________________________________________
+
+MySQL	Решение: 
+select `s_name`, GROUP_CONCAT(DISTINCT `b_name`
+                      ORDER BY `b_name` DESC SEPARATOR ', ') as `book`
+from (
+    select `s_id`, `s_name`, `b_name`, `sb_start`  
+    from `subscriptions`
+    join (
+        select `sb_subscriber`, max(`sb_start`) as `last_day`
+        from `subscriptions`
+        group by  `sb_subscriber`
+      ) as `step1` 
+        on `step1`.`sb_subscriber` = `subscriptions`.`sb_subscriber`
+        and `sb_start` = `step1`.`last_day`
+    join `subscribers` on `subscribers`.`s_id` = `subscriptions`.`sb_subscriber`
+    join `books` on `books`.`b_id` = `subscriptions`.`sb_book`
+  ) as `step2`
+group by `s_id`, `s_name`
+___________________________________________________
+
+MS SQL	Решение:
+WITH 
+  [step_1] 
+  AS (
+    SELECT [sb_subscriber], Max([sb_start]) AS [max_date] 
+    FROM [subscriptions] 
+    GROUP BY [sb_subscriber]), 
+  [step_2] 
+  AS (
+    SELECT [subscriptions].[sb_subscriber], [subscriptions].[sb_book] 
+    FROM [subscriptions] 
+    JOIN [step_1] ON [subscriptions].[sb_subscriber] = [step_1].[sb_subscriber] 
+      AND [subscriptions].[sb_start] = [step_1].[max_date]), 
+  [step_3] 
+    AS (
+      SELECT [s_id], [s_name], [b_name] 
+      FROM [subscribers] 
+      JOIN [step_2] ON [s_id] = [sb_subscriber] 
+      JOIN [books] ON [sb_book] = [b_id]) 
+SELECT [s_name], STUFF ((SELECT ', ' + [int].[b_name] 
+                FROM [step_3] AS [int] 
+                WHERE [ext].[s_id] = [int].[s_id] 
+                ORDER BY [int].[b_name] 
+                FOR xml path(''), type).value('.', 'nvarchar(max)'), 1, 2, '') AS [books_list] 
+FROM [step_3] AS [ext] 
+GROUP BY [s_id], [s_name]
+___________________________________________________
+
+Oracle	Решение:
+with "step2"
+as (
+    select "s_id", "s_name", "b_name", "sb_start"  
+        from "subscriptions"
+        join (
+            select "sb_subscriber", max("sb_start") as "last_day"
+            from "subscriptions"
+            group by  "sb_subscriber"
+          ) "step1" 
+            on "step1"."sb_subscriber" = "subscriptions"."sb_subscriber"
+            and "sb_start" = "step1"."last_day"
+        join "subscribers" on "subscribers"."s_id" = "subscriptions"."sb_subscriber"
+        join "books" on "books"."b_id" = "subscriptions"."sb_book"
+      ) 
+select "s_name", UTL_RAW.CAST_TO_NVARCHAR2 
+                 ( LISTAGG (
+                           UTL_RAW.CAST_TO_RAW("b_name"), 
+                           UTL_RAW.CAST_TO_RAW(N', ') 
+                           ) WITHIN GROUP (ORDER BY "b_name")) as "day_off"
+from "step2"
+group by "s_id", "s_name"
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.2.9.TSK.D: показать последнюю книгу, которую каждый из чи-тателей взял в библиотеке.
+___________________________________________________
+
+MySQL	Решение: 
+
+___________________________________________________
+
+MS SQL	Решение:
+
+___________________________________________________
+
+Oracle	Решение:
+
+-------------------------------------------------------------------------------------------------------------------------------------
+

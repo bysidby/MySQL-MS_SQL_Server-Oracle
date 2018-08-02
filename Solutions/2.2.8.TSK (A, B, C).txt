@@ -1,0 +1,165 @@
+﻿Задание 2.2.8.TSK.A: переписать решения задач 2.2.8.a{127} и 2.2.8.b{129} для MS SQL Server и Oracle с использованием общих табличных выраже-ний.
+___________________________________________________
+
+2.2.8.a MS SQL	Решение:
+with [prepared_data]
+	AS 
+		(SELECT [authors].[a_id], [authors].[a_name], COUNT([m2m_books_genres].[g_id]) AS [genres_count] 
+		FROM [authors] 
+		JOIN [m2m_books_authors] ON [authors].[a_id] = [m2m_books_authors].[a_id] 
+		JOIN [m2m_books_genres] ON [m2m_books_authors].[b_id] = [m2m_books_genres].[b_id] 
+		GROUP BY [authors].[a_id], [a_name], [m2m_books_authors].[b_id] 
+		HAVING COUNT([m2m_books_genres].[g_id]) > 1
+		)  
+SELECT [a_id], 
+		[a_name], 
+		MAX([genres_count]) AS [genres_count] 
+FROM [prepared_data]		 
+GROUP BY [a_id], [a_name]
+
+___________________________________________________
+
+2.2.8.a Oracle	Решение:
+with "prepared_data"
+AS (SELECT "authors"."a_id", "authors"."a_name", COUNT("m2m_books_genres"."g_id") AS "genres_count" 
+    FROM "authors" 
+    JOIN "m2m_books_authors" ON "authors"."a_id" = "m2m_books_authors"."a_id" 
+    JOIN "m2m_books_genres" ON "m2m_books_authors"."b_id" = "m2m_books_genres"."b_id" 
+    GROUP BY "authors"."a_id", "a_name", "m2m_books_authors"."b_id" 
+    HAVING COUNT("m2m_books_genres"."g_id") > 1
+    )  
+SELECT "a_id", 
+    "a_name", 
+    MAX("genres_count") AS "genres_count" 
+FROM "prepared_data"     
+GROUP BY "a_id", "a_name"
+___________________________________________________
+
+2.2.8.b MS SQL	Решение:
+with [prepared_data]
+as (
+		SELECT DISTINCT [m2m_books_authors].[a_id], [m2m_books_genres].[g_id] 
+		FROM [m2m_books_genres] 
+		JOIN [m2m_books_authors] ON [m2m_books_genres].[b_id] = [m2m_books_authors].[b_id]
+	)
+SELECT [prepared_data].[a_id], [a_name], 
+		COUNT([g_id]) AS [genres_count] 
+FROM  [prepared_data]  
+JOIN [authors] ON [prepared_data].[a_id] = [authors].[a_id] 
+GROUP BY [prepared_data].[a_id], [a_name] 
+HAVING COUNT([g_id]) > 1
+___________________________________________________
+
+2.2.8.b Oracle	Решение:
+with "prepared_data"
+as (
+		SELECT DISTINCT "m2m_books_authors"."a_id", "m2m_books_genres"."g_id" 
+		FROM "m2m_books_genres" 
+		JOIN "m2m_books_authors" ON "m2m_books_genres"."b_id" = "m2m_books_authors"."b_id"
+	)
+SELECT "prepared_data"."a_id", "a_name", 
+		COUNT("g_id") AS "genres_count" 
+FROM  "prepared_data"  
+JOIN "authors" ON "prepared_data"."a_id" = "authors"."a_id" 
+GROUP BY "prepared_data"."a_id", "a_name" 
+HAVING COUNT("g_id") > 1
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.2.8.TSK.B: показать читателей, бравших самые разножанро-вые книги (т.е. книги, одновременно относящиеся к максимальному коли-честву жанров).
+___________________________________________________
+
+MySQL	Решение: 
+select `s_name`, `count_genre`
+from `subscriptions`
+join `subscribers` on `subscriptions`.`sb_subscriber` = `subscribers`.`s_id`
+join (
+		select `books`.`b_id`, count(`g_id`) as `count_genre`
+		from `books`
+		join `m2m_books_genres` on `books`.`b_id` = `m2m_books_genres`.`b_id`
+		group by `books`.`b_id`
+        ) as `cg` on `subscriptions`.`sb_book` = `cg`.`b_id`
+group by `subscribers`.`s_id`
+having `count_genre` = max(`count_genre`)
+___________________________________________________
+
+MS SQL	Решение:
+select s_name, max(count_genre) count_genre
+from subscriptions
+join subscribers on subscriptions.sb_subscriber = subscribers.s_id
+join (
+		select books.b_id, count(g_id) as count_genre
+		from books
+		join m2m_books_genres on books.b_id = m2m_books_genres.b_id
+		group by books.b_id
+        ) as cg on subscriptions.sb_book = cg.b_id
+group by subscribers.s_id, s_name
+
+___________________________________________________
+
+Oracle	Решение:
+select "s_name", max("count_genre") as "count_genre"
+from "subscriptions"
+join "subscribers" on "subscriptions"."sb_subscriber" = "subscribers"."s_id"
+join (
+		select "books"."b_id", count("g_id") as "count_genre"
+		from "books"
+		join "m2m_books_genres" on "books"."b_id" = "m2m_books_genres"."b_id"
+		group by "books"."b_id"
+        ) "cg" on "subscriptions"."sb_book" = "cg"."b_id"
+group by "s_name", "subscribers"."s_id"
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.2.8.TSK.C: показать читателей наибольшего количества жан-ров (не важно, брали ли они книги, каждая из которых относится одновре-менно к многим жанрам, или же просто много книг из разных жанров, каж-дая из которых относится к небольшому количеству жанров).
+___________________________________________________
+
+MySQL	Решение: 
+select `s_name`, max(`count_g`) as `count_g`
+from (
+    select `sb_subscriber`,`s_name`, count(`g_id`) as `count_g`
+    from (
+        select `sb_subscriber`, `s_name`, `g_id`
+        from `subscriptions`
+        join `subscribers` on `subscriptions`.`sb_subscriber` = `subscribers`.`s_id`
+        join `m2m_books_genres` on `subscriptions`.`sb_book` = `m2m_books_genres`.`b_id`
+        group by `sb_subscriber`, `s_name`, `g_id`) as `a`
+    group by `sb_subscriber`, `s_name`) as `b`
+___________________________________________________
+
+MS SQL	Решение:
+with prep
+as (
+    select sb_subscriber, s_name, count(g_id) as count_g
+    from (
+            select sb_subscriber, s_name, g_id
+            from subscriptions
+            join subscribers on subscriptions.sb_subscriber = subscribers.s_id
+            join m2m_books_genres on subscriptions.sb_book = m2m_books_genres.b_id
+            group by sb_subscriber, s_name, g_id) a
+    group by sb_subscriber, s_name
+    )
+select s_name
+from prep
+where count_g = (select max(count_g)
+                   from prep)
+
+___________________________________________________
+
+Oracle	Решение:
+with "prep"
+as (
+    select "sb_subscriber", "s_name", count("g_id") as "count_g"
+    from (
+            select "sb_subscriber", "s_name", "g_id"
+            from "subscriptions"
+            join "subscribers" on "subscriptions"."sb_subscriber" = "subscribers"."s_id"
+            join "m2m_books_genres" on "subscriptions"."sb_book" = "m2m_books_genres"."b_id"
+            group by "sb_subscriber", "s_name", "g_id") "a"
+    group by "sb_subscriber", "s_name"
+    )
+select "s_name"
+from "prep"
+where "count_g" = (select max("count_g")
+                   from "prep")
+-------------------------------------------------------------------------------------------------------------------------------------
