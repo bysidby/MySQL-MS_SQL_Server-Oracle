@@ -1,0 +1,243 @@
+﻿
+Задание 2.3.1.TSK.A: добавить в базу данных информацию о троих новых читателях: «Орлов О.О.», «Соколов С.С.», «Беркутов Б.Б.»
+
+___________________________________________________
+
+MySQL	Решение: 
+insert into `subscribers` (`s_name`) 
+values ('Орлов О.О.');
+insert into `subscribers` (`s_name`) 
+
+values ('Соколов С.С.');
+
+insert into `subscribers` (`s_name`)
+
+values ('Беркутов Б.Б.');
+___________________________________________________
+
+MS SQL	Решение:
+insert into subscribers (s_name) 
+values ('Орлов О.О.');
+insert into subscribers (s_name) 
+values ('Соколов С.С.');
+insert into subscribers (s_name) 
+values ('Беркутов Б.Б.');
+___________________________________________________
+
+Oracle	Решение:
+insert into "subscribers" ("s_name") 
+values (N'Орлов О.О.');
+insert into "subscribers" ("s_name") 
+values (N'Соколов С.С.');
+insert into "subscribers" ("s_name") 
+values (N'Беркутов Б.Б.');
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.2.1.TSK.B: отразить в базе данных информацию о том, что каж-дый из добавленных в задании 2.3.1.TSK.A читателей 20-го января 2016-го года на месяц взял в библиотеке книгу «Курс теоретической физики».
+
+___________________________________________________
+
+MySQL	Решение: 
+insert into `subscriptions` (`sb_subscriber`, `sb_book`, `sb_start`, `sb_finish`, `sb_is_active`)
+value (5, 6, '2016-01-20', '2016-02-19', 'N');
+insert into `subscriptions` (`sb_subscriber`, `sb_book`, `sb_start`, `sb_finish`, `sb_is_active`)
+value (6, 6, '2016-01-20', '2016-02-19', 'N');
+insert into `subscriptions` (`sb_subscriber`, `sb_book`, `sb_start`, `sb_finish`, `sb_is_active`)
+value (7, 6, '2016-01-20', '2016-02-19', 'N');
+___________________________________________________
+
+MS SQL	Решение:
+insert into subscriptions (sb_subscriber, sb_book, sb_start, sb_finish, sb_is_active)
+values (5, 6, '2016-01-20', '2016-02-19', 'N');
+insert into subscriptions (sb_subscriber, sb_book, sb_start, sb_finish, sb_is_active)
+values (6, 6, '2016-01-20', '2016-02-19', 'N');
+insert into subscriptions (sb_subscriber, sb_book, sb_start, sb_finish, sb_is_active)
+values (7, 6, '2016-01-20', '2016-02-19', 'N');
+___________________________________________________
+
+Oracle	Решение:
+insert into "subscriptions" ("sb_id", "sb_subscriber", "sb_book", "sb_start", "sb_finish", "sb_is_active")
+values (null, 5, 6, TO_DATE('2016-01-20', 'YYYY-MM-DD'), TO_DATE('2016-02-19', 'YYYY-MM-DD'), 'N');
+insert into "subscriptions" ("sb_id", "sb_subscriber", "sb_book", "sb_start", "sb_finish", "sb_is_active")
+values (null, 6, 6, TO_DATE('2016-01-20', 'YYYY-MM-DD'), TO_DATE('2016-02-19', 'YYYY-MM-DD'), 'N');
+insert into "subscriptions" ("sb_id", "sb_subscriber", "sb_book", "sb_start", "sb_finish", "sb_is_active")
+values (null, 7, 6, TO_DATE('2016-01-20', 'YYYY-MM-DD'), TO_DATE('2016-02-19', 'YYYY-MM-DD'), 'N');
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 2.2.1.TSK.C: добавить в базу данных пять любых авторов и де-сять книг этих авторов (по две на каждого); если понадобится, добавить в базу данных соответствующие жанры. Отразить авторство добавлен-ных книг и их принадлежность к соответствующим жанрам.
+
+___________________________________________________
+
+MySQL	Решение: 
+insert into `authors` (`a_id`, `a_name`)
+values (null, 'А.К. Дойл'),
+(null, 'Ф.М. Достоевский'),
+(null, 'А. Дюма'),
+(null, 'А.С. Маршак'),
+(null, 'К.И. Чуковский');
+insert into `books` (`b_id`, `b_name`, `b_year`, `b_quantity`)
+values (null, 'Этюд в багровых тонах', 1999, 15),
+(null, 'Знак четырёх', 2006, 3),
+(null, 'Преступление и наказание', 2001, 5),
+(null, 'Игрок', 1999, 7),
+(null, 'Три мушкетёра', 1987, 3),
+(null, 'Узник замка Иф', 1998, 66),
+(null, 'Рассказ о неизвестном герое', 2002, 1),
+(null, 'Двенадцать месяцев', 2000, 2),
+(null, 'Айболит', 2000, 4),
+(null, 'Федорино горе', 1999, 1);
+insert into `genres` (`g_id`, `g_name`)
+values (null, 'Сказки'),
+(null, 'Детектив');
+insert into `m2m_books_authors` (`b_id`, `a_id`)
+values (8, 8),
+(9, 8),
+(10, 9),
+(11, 9),
+(12, 10),
+(13, 10),
+(14, 11),
+(15, 11),
+(16, 12),
+(17, 12);
+insert into `m2m_books_genres` (`b_id`, `g_id`)
+values (8, 8),
+(9, 8),
+(10, 5),
+(11, 5),
+(12, 5),
+(13, 5),
+(14, 1),
+(15, 7),
+(16, 7),
+(17, 7);
+___________________________________________________
+
+MS SQL	Решение:
+insert into authors (a_name)
+values ('А.К. Дойл'),
+('Ф.М. Достоевский'),
+('А. Дюма'),
+('А.С. Маршак'),
+('К.И. Чуковский');
+insert into books (b_name, b_year, b_quantity)
+values ('Этюд в багровых тонах', 1999, 15),
+('Знак четырёх', 2006, 3),
+('Преступление и наказание', 2001, 5),
+('Игрок', 1999, 7),
+('Три мушкетёра', 1987, 3),
+('Узник замка Иф', 1998, 66),
+('Рассказ о неизвестном герое', 2002, 1),
+('Двенадцать месяцев', 2000, 2),
+('Айболит', 2000, 4),
+('Федорино горе', 1999, 1);
+insert into genres (g_name)
+values ('Сказки'),
+('Детектив');
+insert into m2m_books_authors (b_id, a_id)
+values (8, 8),
+(9, 8),
+(10, 9),
+(11, 9),
+(12, 10),
+(13, 10),
+(14, 11),
+(15, 11),
+(16, 12),
+(17, 12);
+insert into m2m_books_genres (b_id, g_id)
+values (8, 8),
+(9, 8),
+(10, 5),
+(11, 5),
+(12, 5),
+(13, 5),
+(14, 1),
+(15, 7),
+(16, 7),
+(17, 7);
+___________________________________________________
+
+Oracle	Решение:
+insert all
+into "authors" ("a_name")
+values (N'А.К. Дойл')
+into "authors" ("a_name")
+values (N'Ф.М. Достоевский')
+into "authors" ("a_name")
+values (N'А. Дюма')
+into "authors" ("a_name")
+values (N'А.С. Маршак')
+into "authors" ("a_name")
+values (N'К.И. Чуковский')
+into "books" ("b_id", "b_name", "b_year", "b_quantity")
+values (null, N'Этюд в багровых тонах', 1999, 15)
+into "books" ("b_id", "b_name", "b_year", "b_quantity")
+values (null, N'Знак четырёх', 2006, 3)
+into "books" ("b_id", "b_name", "b_year", "b_quantity")
+values (null, N'Преступление и наказание', 2001, 5)
+into "books" ("b_id", "b_name", "b_year", "b_quantity")
+values (null, N'Игрок', 1999, 7)
+into "books" ("b_id", "b_name", "b_year", "b_quantity")
+values (null, N'Три мушкетёра', 1987, 3)
+into "books" ("b_id", "b_name", "b_year", "b_quantity")
+values (null, N'Узник замка Иф', 1998, 66)
+into "books" ("b_id", "b_name", "b_year", "b_quantity")
+values (null, N'Рассказ о неизвестном герое', 2002, 1)
+into "books" ("b_id", "b_name", "b_year", "b_quantity")
+values (null, N'Двенадцать месяцев', 2000, 2)
+into "books" ("b_id", "b_name", "b_year", "b_quantity")
+values (null, N'Айболит', 2000, 4)
+into "books" ("b_id", "b_name", "b_year", "b_quantity")
+values (null, N'Федорино горе', 1999, 1)
+into "genres" ("g_id", "g_name")
+values (null, N'Сказки')
+into "genres" ("g_id", "g_name")
+values (null, N'Детектив')
+SELECT 1 FROM "DUAL";
+insert all
+into "m2m_books_authors" ("b_id", "a_id")
+values (8, 8)
+into "m2m_books_authors" ("b_id", "a_id")
+values (9, 8)
+into "m2m_books_authors" ("b_id", "a_id")
+values (10, 9)
+into "m2m_books_authors" ("b_id", "a_id")
+values (11, 9)
+into "m2m_books_authors" ("b_id", "a_id")
+values (12, 10)
+into "m2m_books_authors" ("b_id", "a_id")
+values (13, 10)
+into "m2m_books_authors" ("b_id", "a_id")
+values (14, 11)
+into "m2m_books_authors" ("b_id", "a_id")
+values (15, 11)
+into "m2m_books_authors" ("b_id", "a_id")
+values (16, 12)
+into "m2m_books_authors" ("b_id", "a_id")
+values (17, 12)
+into "m2m_books_genres" ("b_id", "g_id")
+values (8, 8)
+into "m2m_books_genres" ("b_id", "g_id")
+values (9, 8)
+into "m2m_books_genres" ("b_id", "g_id")
+values (10, 5)
+into "m2m_books_genres" ("b_id", "g_id")
+values (11, 5)
+into "m2m_books_genres" ("b_id", "g_id")
+values (12, 5)
+into "m2m_books_genres" ("b_id", "g_id")
+values (13, 5)
+into "m2m_books_genres" ("b_id", "g_id")
+values (14, 1)
+into "m2m_books_genres" ("b_id", "g_id")
+values (15, 7)
+into "m2m_books_genres" ("b_id", "g_id")
+values (16, 7)
+into "m2m_books_genres" ("b_id", "g_id")
+values (17, 7)
+SELECT 1 FROM "DUAL";
+
+-------------------------------------------------------------------------------------------------------------------------------------
