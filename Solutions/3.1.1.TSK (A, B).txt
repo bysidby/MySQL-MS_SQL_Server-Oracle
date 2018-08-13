@@ -1,0 +1,97 @@
+﻿
+Задание 3.1.1.TSK.A: упростить использование решения задачи 2.2.8.b{127} так, чтобы для получения нужных данных не приходилось использовать представленные в решении{129} объёмные запросы.
+
+___________________________________________________
+
+MySQL	Решение: 
+with `prepared_data`
+as (
+		SELECT DISTINCT `m2m_books_authors`.`a_id`, `m2m_books_genres`.`g_id` 
+		FROM `m2m_books_genres` 
+		JOIN `m2m_books_authors` ON `m2m_books_genres`.`b_id` = `m2m_books_authors`.`b_id`
+	)
+SELECT `prepared_data`.`a_id`, `a_name`, 
+		COUNT(`g_id`) AS `genres_count` 
+FROM  `prepared_data`  
+JOIN `authors` ON `prepared_data`.`a_id` = `authors`.`a_id` 
+GROUP BY `prepared_data`.`a_id`, `a_name` 
+HAVING COUNT(`g_id`) > 1
+___________________________________________________
+
+MS SQL	Решение:
+with [prepared_data]
+as (
+		SELECT DISTINCT [m2m_books_authors].[a_id], [m2m_books_genres].[g_id] 
+		FROM [m2m_books_genres] 
+		JOIN [m2m_books_authors] ON [m2m_books_genres].[b_id] = [m2m_books_authors].[b_id]
+	)
+SELECT [prepared_data].[a_id], [a_name], 
+		COUNT([g_id]) AS [genres_count] 
+FROM  [prepared_data]  
+JOIN [authors] ON [prepared_data].[a_id] = [authors].[a_id] 
+GROUP BY [prepared_data].[a_id], [a_name] 
+HAVING COUNT([g_id]) > 1
+___________________________________________________
+
+Oracle	Решение:
+with "prepared_data"
+as (
+		SELECT DISTINCT "m2m_books_authors"."a_id", "m2m_books_genres"."g_id" 
+		FROM "m2m_books_genres" 
+		JOIN "m2m_books_authors" ON "m2m_books_genres"."b_id" = "m2m_books_authors"."b_id"
+	)
+SELECT "prepared_data"."a_id", "a_name", 
+		COUNT("g_id") AS "genres_count" 
+FROM  "prepared_data"  
+JOIN "authors" ON "prepared_data"."a_id" = "authors"."a_id" 
+GROUP BY "prepared_data"."a_id", "a_name" 
+HAVING COUNT("g_id") > 1
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 3.1.1.TSK.B: создать представление, позволяющее получать список читателей с количеством находящихся у каждого читателя на ру-ках книг, но отображающее только таких читателей, по которым имеются задолженности, т.е. на руках у читателя есть хотя бы одна книга, которую он должен был вернуть до наступления текущей даты.
+___________________________________________________
+
+MySQL	Решение: 
+create or replace view `count_sub_plus_book`
+as
+select `s_name`, count(`sb_book`) as `count_sb_b` 
+from `subscribers`
+join `subscriptions` on `subscribers`.`s_id` = `subscriptions`.`sb_subscriber`
+where `sb_is_active` = 'Y'
+group by `s_name`, `subscribers`.`s_id`
+having `subscribers`.`s_id` in (select `sb_subscriber` 
+              from `subscriptions` 
+              where `sb_is_active` = 'Y' 
+                            and CURDATE() > `sb_finish`)
+___________________________________________________
+
+MS SQL	Решение:
+create view count_sub_plus_book
+as
+select s_name, count(sb_book) as count_sb_b 
+from subscribers
+join subscriptions on subscribers.s_id = subscriptions.sb_subscriber
+where sb_is_active = 'Y'
+group by s_name, subscribers.s_id
+having subscribers.s_id in (select sb_subscriber 
+              from subscriptions 
+              where sb_is_active = 'Y' 
+                            and CONVERT(date, GETDATE()) > CONVERT(date, sb_finish))
+___________________________________________________
+
+Oracle	Решение:
+create or replace view "count_sub_plus_book"
+as
+select "s_name", count("sb_book") as "count_sb_b" 
+from "subscribers"
+join "subscriptions" on "subscribers"."s_id" = "subscriptions"."sb_subscriber"
+where "sb_is_active" = 'Y'
+group by "s_name", "subscribers"."s_id"
+having "subscribers"."s_id" in (select distinct "sb_subscriber" 
+              from "subscriptions" 
+              where "sb_is_active" = 'Y' 
+              and TRUNC(SYSDATE) > "sb_finish");
+
+-------------------------------------------------------------------------------------------------------------------------------------
+

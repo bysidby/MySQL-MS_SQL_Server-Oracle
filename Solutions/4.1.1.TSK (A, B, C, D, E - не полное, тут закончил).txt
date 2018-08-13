@@ -1,0 +1,262 @@
+﻿
+Задание 4.1.1.TSK.A: модифицировать схему базы данных «Библиотека» таким образом, чтобы таблица authors хранила актуальную информа-цию о дате последней выдачи книги автора читателю.
+
+___________________________________________________
+
+MySQL	Решение: 
+-- 1. Добавить столбец "last_extradition" в табл. authors
+alter table `authors`
+add column `last_extradition` DATE NULL DEFAULT NULl AFTER `a_name`
+
+-- 2. Инициализировать значения
+update `authors`
+left join (select `a_id` as `au_id`, max(`sb_start`) as `sb_start`
+	from `subscriptions`
+           	join `m2m_books_authors` on `b_id` = `sb_book`
+           	group by `a_id`) as `step1` on `au_id` = `a_id`
+set `last_extradition` = `sb_start`
+
+-- 3. создать триггеры
+drop trigger `last_extradition_ins`;
+drop trigger `last_extradition_del`;
+drop trigger `last_extradition_upd`;
+
+DELIMITER $$
+CREATE TRIGGER `last_extradition_ins` 
+AFTER INSERT 
+ON `subscriptions` 
+  FOR EACH ROW 
+    BEGIN 
+      update `authors`
+      left join (select distinct `a_id` as `au_id`, max(`sb_start`) as `sb_start`
+            from `subscriptions`
+            join `m2m_books_authors` on `b_id` = `sb_book`
+            group by `a_id`) as `step1` on `au_id` = `a_id`
+      set `last_extradition` = `sb_start`
+            where `a_id` = (select distinct `a_id` from `subscriptions` join `m2m_books_authors` where `b_id` = new.`sb_book`);
+    END; 
+$$
+
+CREATE TRIGGER `last_extradition_upd` 
+AFTER update 
+ON `subscriptions` 
+  FOR EACH ROW 
+    BEGIN 
+      update `authors`
+      left join (select distinct `a_id` as `au_id`, max(`sb_start`) as `sb_start`
+            from `subscriptions`
+            join `m2m_books_authors` on `b_id` = `sb_book`
+            group by `a_id`) as `step1` on `au_id` = `a_id`
+      set `last_extradition` = `sb_start`
+            where `a_id` in (select distinct `a_id` from `subscriptions` join `m2m_books_authors` where `b_id` = new.`sb_book` or `b_id` = old.`sb_book`);
+    END; 
+$$
+
+CREATE TRIGGER `last_extradition_del` 
+AFTER delete 
+ON `subscriptions` 
+  FOR EACH ROW 
+    BEGIN 
+      update `authors`
+      left join (select distinct `a_id` as `au_id`, max(`sb_start`) as `sb_start`
+            from `subscriptions`
+            join `m2m_books_authors` on `b_id` = `sb_book`
+            group by `a_id`) as `step1` on `au_id` = `a_id`
+      set `last_extradition` = `sb_start`
+            where `a_id` = (select distinct `a_id` from `subscriptions` join `m2m_books_authors` where `b_id` = old.`sb_book`);
+    END; 
+$$
+DELIMITER ;
+
+___________________________________________________
+
+MS SQL	Решение:
+-- 1. Добавить столбец "last_extradition" в табл. authors
+alter table authors
+add last_extradition DATE NULL DEFAULT NULl
+
+-- 2. Инициализировать значения
+update authors
+set last_extradition = sb_start
+from authors
+left join (select a_id as au_id, max(sb_start) as sb_start
+      from subscriptions
+            join m2m_books_authors on b_id = sb_book
+            group by a_id) as step1 on au_id = a_id
+
+-- 3. создать триггеры
+drop trigger last_extradition_ins_upd_del;
+
+CREATE TRIGGER last_extradition_ins_upd_del 
+on subscriptions
+AFTER INSERT, UPDATE, delete 
+AS
+	update authors
+set last_extradition = sb_start
+from authors
+left join (select a_id as au_id, max(sb_start) as sb_start
+			from subscriptions
+            join m2m_books_authors on b_id = sb_book
+            group by a_id) as step1 on au_id = a_id
+
+___________________________________________________
+
+Oracle	Решение:
+-- 1. Добавить столбец "last_extradition" в табл. authors
+alter table "authors"
+add ("last_extradition" DATE  DEFAULT NULL NULl)
+
+-- 2. Инициализировать значения
+update "authors" "outer"
+set "last_extradition" = (select "sb_start"
+from "authors"
+left join (select "a_id" as "au_id", max("sb_start") as "sb_start"
+			from "subscriptions"
+            join "m2m_books_authors" on "b_id" = "sb_book"
+            group by "a_id") "prepared_data" on "au_id" = "a_id"
+            WHERE "outer"."a_id" = "a_id");         
+
+
+-- 3. создать триггеры
+drop trigger "last_extradition_ins_upd_del";
+
+CREATE TRIGGER "last_extradition_ins_upd_del" 
+AFTER INSERT OR UPDATE OR DELETE
+ON "subscriptions"
+BEGIN 
+	update "authors" "outer"
+set "last_extradition" = (select "sb_start"
+from "authors"
+left join (select "a_id" as "au_id", max("sb_start") as "sb_start"
+			from "subscriptions"
+            join "m2m_books_authors" on "b_id" = "sb_book"
+            group by "a_id") on "au_id" = "a_id"
+            WHERE "outer"."a_id" = "a_id");       
+END;
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+Задание 4.1.1.TSK.B: создать кэширующую таблицу best_averages, со-держащую в любой момент времени следующую актуальную информа-цию:
+а) сколько в среднем книг находится на руках у читателей, за время ра-боты с библиотекой прочитавших более 20 книг;
+б) за сколько в среднем по времени (в днях) прочитывает книгу читатель, никогда не державший у себя книгу больше двух недель;
+в) сколько в среднем книг прочитал читатель, не имеющий просроченных выдач книг.
+
+___________________________________________________
+
+MySQL	Решение: 
+-- три шага 1. создать таблицу, 2. заполнить ее данными, 3. создать триггеры
+
+-- 1. создадим таблицу, где будем хранить кэширующие данные
+CREATE TABLE `best_averages`
+ ( 
+`avg_book_more20` INTEGER UNSIGNED null, 
+`avg_read_2weeks` INTEGER UNSIGNED null, 
+`avg_read_good_substr` INTEGER UNSIGNED null
+   )
+   
+-- 2. заполнить данными таблицу
+insert into `best_averages`
+(`avg_book_more20`, `avg_read_2weeks`, `avg_read_good_substr`)
+values (
+(select avg(`count_active_book`) as `avg_book_more20`
+from (
+  select `sb_subscriber`, count(`sb_book`) as `count_active_book`
+  from `subscriptions`
+  group by `sb_subscriber`,`sb_is_active`
+  having `sb_is_active` = 'Y' and 
+  `sb_subscriber` in (select `sb_subscriber`
+            from `subscriptions`
+            group by `sb_subscriber`,`sb_is_active`
+            having `sb_is_active` = 'N' and  count(`sb_book`) > 20)) as `step1`),
+(select avg(`days`) as `avg_read_2weeks`
+from (
+  select `sb_subscriber`, TO_DAYS(`sb_finish`)-TO_DAYS(`sb_start`)+1 as `days`
+  from `subscriptions`
+  where `sb_is_active` = 'N'
+  and `sb_subscriber` not in (
+    select distinct `sb_subscriber`
+        from `subscriptions`
+        where `sb_is_active` = 'N'
+        and TO_DAYS(`sb_finish`)-TO_DAYS(`sb_start`)+1 <= 14)
+    ) as `step2`),
+(select avg(`count_book`) as `avg_read_good_substr`
+from (
+  select `sb_subscriber`, count(`sb_book`) as `count_book`
+  from `subscriptions`
+  group by `sb_subscriber`, `sb_is_active`
+  having `sb_is_active` = 'N'
+  and `sb_subscriber` not in (
+    select `sb_subscriber`
+    from `subscriptions`
+    where `sb_is_active` = 'Y'
+    and `sb_finish` < CURDATE()
+                )
+  ) as `step3`)
+)
+
+
+___________________________________________________
+
+MS SQL	Решение:
+
+___________________________________________________
+
+Oracle	Решение:
+
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+Задание 4.1.1.TSK.C: оптимизировать MySQL-триггеры из решения{281} за-дачи 4.1.1.b{272} так, чтобы не выполнять лишних действий там, где в них нет необходимости (подсказка: не в каждом случае нам нужны все соби-раемые имеющимися запросами данные).
+
+___________________________________________________
+
+MySQL	Решение: 
+
+___________________________________________________
+
+MS SQL	Решение:
+
+___________________________________________________
+
+Oracle	Решение:
+
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+Задание 4.1.1.TSK.D: доработать решение{272} задачи 4.1.1.a{272} для MySQL таким образом, чтобы оно учитывало изменения в таблице sub-scriptions, вызванные операцией каскадного удаления (при удалении книг). Убедиться, что решения для MS SQL Server и Oracle не требуют такой доработки.
+
+___________________________________________________
+
+MySQL	Решение: 
+
+___________________________________________________
+
+MS SQL	Решение:
+
+___________________________________________________
+
+Oracle	Решение:
+
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+Задание 4.1.1.TSK.E: доработать решение{281} задачи 4.1.1.b{272} для MySQL таким образом, чтобы оно учитывало изменения в таблице sub-scriptions, вызванные операцией каскадного удаления (при удалении книг). Убедиться, что решения для MS SQL Server и Oracle не требуют такой доработки.
+___________________________________________________
+
+MySQL	Решение: 
+
+___________________________________________________
+
+MS SQL	Решение:
+
+___________________________________________________
+
+Oracle	Решение:
+
+
+-------------------------------------------------------------------------------------------------------------------------------------
+

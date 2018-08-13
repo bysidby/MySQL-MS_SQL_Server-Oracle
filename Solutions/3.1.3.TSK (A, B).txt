@@ -1,0 +1,70 @@
+﻿
+Задание 3.1.3.TSK.A: создать представление, через которое невозможно получить информацию о том, какая конкретно книга была выдана чита-телю в любой из выдач.
+
+___________________________________________________
+
+MySQL	Решение: 
+CREATE VIEW `book_anonymous` 
+AS 
+SELECT `sb_id`, `sb_subscriber`, `sb_start`, `sb_finish`, `sb_is_active` 
+FROM `subscriptions`
+___________________________________________________
+
+MS SQL	Решение:
+CREATE VIEW [books_anonymous] 
+WITH SCHEMABINDING 
+AS 
+SELECT [sb_id], [sb_subscriber], [sb_start], [sb_finish], [sb_is_active] 
+FROM [dbo].[subscriptions]
+___________________________________________________
+
+Oracle	Решение:
+CREATE VIEW "books_anonymous" 
+AS 
+SELECT "sb_id", "sb_subscriber", "sb_start", "sb_finish", "sb_is_active" 
+FROM "subscriptions"
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Задание 3.1.3.TSK.B: создать представление, возвращающее всю ин-формацию из таблицы subscriptions, преобразуя даты из полей sb_start и sb_finish в формат «ГГГГ-ММ-ДД НН», где «НН» — день недели в виде своего полного названия (т.е. «Понедельник», «Вторник» и т.д.)
+
+___________________________________________________
+
+MySQL	Решение: 
+CREATE VIEW `subscriptions_date_f` 
+AS 
+SELECT `sb_id`, `sb_subscriber`, `sb_book`, DATE_FORMAT(`sb_start`, '%Y-%m-%d %W') `sb_start`, DATE_FORMAT(`sb_finish`, '%Y-%m-%d %W') `sb_finish`, `sb_is_active` 
+FROM `subscriptions`
+___________________________________________________
+
+MS SQL	Решение:
+CREATE VIEW [subscriptions_date_f] 
+WITH SCHEMABINDING 
+AS 
+SELECT [sb_id], [sb_subscriber], [sb_book], 
+cast(
+(CONVERT(VARCHAR(10), [sb_start], 120)
++' '
++(UPPER(SUBSTRING((CAST((DATENAME(weekday, [sb_start])) AS VARCHAR(11))), 1, 1)))
++(LOWER(SUBSTRING((CAST((DATENAME(weekday, [sb_start])) AS VARCHAR(11))), 2, 11)))
+)
+ as VARCHAR(22)) as [sb_start],
+cast(
+(CONVERT(VARCHAR(10), [sb_finish], 120)
++' '
++(UPPER(SUBSTRING((CAST((DATENAME(weekday, [sb_finish])) AS VARCHAR(11))), 1, 1)))
++(LOWER(SUBSTRING((CAST((DATENAME(weekday, [sb_finish])) AS VARCHAR(11))), 2, 11)))
+)
+ as VARCHAR(22)) as [sb_finish], 
+ [sb_is_active] 
+FROM [dbo].[subscriptions]
+___________________________________________________
+
+Oracle	Решение:
+CREATE VIEW "subscriptions_date_f" 
+AS 
+SELECT "sb_id", "sb_subscriber", "sb_book", to_char("sb_start",'YYYY-MM-DD DAY') as "sb_start", to_char("sb_finish",'YYYY-MM-DD DAY') as "sb_finish", "sb_is_active" 
+FROM "subscriptions"
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
